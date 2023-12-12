@@ -1,27 +1,29 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.kata.spring.boot_security.demo.entities.User;
-import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    private UserService userService;
-    private RoleRepository roleRepository;
 
-    public AdminController(UserService userService, RoleRepository roleRepository){
+    private final UserService userService;
+
+    @Autowired
+    public AdminController(UserService userService) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
-
     }
 
-    @GetMapping
-    public String getUserList(Model model) {
-        model.addAttribute("users", userService.getUserList());
+    @GetMapping("")
+    public String findAll(Model model) {
+        model.addAttribute("users", userService.findAll());
         return "admin";
     }
 
@@ -32,7 +34,26 @@ public class AdminController {
 
     @PostMapping("/user-create")
     public String createUser(User user) {
-        userService.addUser(user);
+        userService.saveUser(user);
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/user-update/{id}")
+    public String updateUserForm(@PathVariable("id") Long id, Model model) {
+        User user = userService.findById(id);
+        model.addAttribute("user", user);
+        return "userUpdate";
+    }
+
+    @PostMapping("/user-update")
+    public String updateUser(User user) {
+        userService.saveUser(user);
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/user-delete/{id}")
+    public String deleteUser(@PathVariable("id") Long id) {
+        userService.deleteById(id);
         return "redirect:/admin";
     }
 }
